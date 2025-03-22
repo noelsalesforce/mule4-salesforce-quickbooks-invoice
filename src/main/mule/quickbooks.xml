@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:oauth="http://www.mulesoft.org/schema/mule/oauth" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:slack="http://www.mulesoft.org/schema/mule/slack" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:quickbooks-online-connector-mule-4="http://www.mulesoft.org/schema/mule/quickbooks-online-connector-mule-4" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/quickbooks-online-connector-mule-4 http://www.mulesoft.org/schema/mule/quickbooks-online-connector-mule-4/current/mule-quickbooks-online-connector-mule-4.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/slack http://www.mulesoft.org/schema/mule/slack/current/mule-slack.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/oauth http://www.mulesoft.org/schema/mule/oauth/current/mule-oauth.xsd">
+	<configuration-properties doc:name="Configuration properties" doc:id="8d8655f7-1b53-43aa-9ab3-118b115b8a97" file="credentials.properties" />
+	<quickbooks-online-connector-mule-4:config name="Quickbooks_Online_Connector_Mule4Connector_Config" doc:name="Quickbooks Online Connector Mule4Connector Config" doc:id="ca8c2429-5fda-4e8d-833b-ab79c5ab09ec" >
+		<quickbooks-online-connector-mule-4:auth-connection baseUri="https://sandbox-quickbooks.api.intuit.com/v3/company/${qb.sandboxCompanyId}" >
+			<quickbooks-online-connector-mule-4:oauth-authorization-code consumerKey="${qb.consumerKey}" consumerSecret="${qb.consumerSecret}" scopes="${qb.scopes}"/>
+			<quickbooks-online-connector-mule-4:oauth-callback-config listenerConfig="HTTP_Listener_config" callbackPath="${qb.callbackPath}" authorizePath="${qb.authorizePath}" externalCallbackUrl="${qb.externalCallbackPath}" />
+			<quickbooks-online-connector-mule-4:oauth-store-config objectStore="Object_store" />
+		</quickbooks-online-connector-mule-4:auth-connection>
+	</quickbooks-online-connector-mule-4:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="922a78fb-7e8b-4391-89b1-3beba26dc444" >
+		<http:listener-connection host="0.0.0.0" port="8082" />
+	</http:listener-config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="5910dbaf-ee2d-4b0b-85e0-2c149e8b25ec" >
+		<salesforce:basic-connection username="${sfdc.username}" password="${sfdc.password}" />
+	</salesforce:sfdc-config>
+	<http:request-config name="Slack_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="b7eff5ba-69da-49b4-82d0-9367b4a4ffb3" >
+		<http:request-connection host="asana-bhsdje.5sc6y6-1.usa-e2.cloudhub.io" />
+	</http:request-config>
+	<slack:config name="Slack_Connector_Config" doc:name="Slack Connector Config" doc:id="1840a36b-adf9-4110-b98d-c7f23f143542" >
+		<slack:slack-auth-connection >
+			<slack:oauth-authorization-code consumerKey="${slack.clientId}" consumerSecret="${slack.clientSecret}" resourceOwnerId="${slack.resourceOwnerId}"/>
+			<slack:oauth-callback-config listenerConfig="HTTP_Listener_config" callbackPath="${slack.callbackPath}" authorizePath="${slack.authorizePath}" externalCallbackUrl="${slack.externalCallbackUrl}"/>
+		</slack:slack-auth-connection>
+	</slack:config>
+	<os:object-store name="Object_store" doc:name="Object store" doc:id="8a32e573-bff4-424e-9171-5ec71bf8a431" />
+	<global-property doc:name="Global Property" doc:id="31c14947-22de-4075-843d-a9afaf8fb25a" name="Salesforce.OnModifiedObjectFilter1" value="Title='CEO'" />
+	<http:listener-config name="HTTP_Listener_config_8083" doc:name="HTTP Listener config" doc:id="dce5caaa-a6ff-458a-b340-9ff04f2d18e5" >
+		<http:listener-connection host="0.0.0.0" port="8083" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="85d584be-49d8-4090-a7fa-07f62a5dabf9" basePath="/v3/company/9341452518076344" >
+		<http:request-connection protocol="HTTPS" host="sandbox-quickbooks.api.intuit.com" >
+			<http:authentication >
+				<oauth:authorization-code-grant-type localCallbackConfig="HTTP_Listener_config_8083" externalCallbackUrl="http://localhost:8083/callback" localAuthorizationUrl="http://localhost:8083/authorize" authorizationUrl="https://appcenter.intuit.com/connect/oauth2" clientId="${qb.consumerKey}" clientSecret="${qb.consumerSecret}" scopes="com.intuit.quickbooks.accounting" tokenUrl="https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer" localCallbackConfigPath="/callback" state="8083_state"/>
+			</http:authentication>
+		</http:request-connection>
+	</http:request-config>
+	<flow name="Flow1" doc:id="d627702e-af44-471e-b0b8-0a05c8a46bf2">
+		<http:listener doc:name="/createInvoice" doc:id="523d090c-c350-4ed8-a0d4-841ebedc537f" config-ref="HTTP_Listener_config" path="/createInvoice" />
+		<ee:transform doc:name="Transform Message" doc:id="8efbf512-95c6-420a-b88a-71e52cd07d20">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var invoiceData = payload.invoice // This is the incoming data
+---
+{
+	Line: [{
+		DetailType: "SalesItemLineDetail",
+		Amount: invoiceData.amount, // Maps to Amount
+		
+            SalesItemLineDetail: {
+			ItemRef: {
+				name: invoiceData.itemName, // Maps to Item Name
+				
+                    value: invoiceData.itemId // Maps to Item ID
+			
+                }
+		}
+	}],
+	CustomerRef: {
+		value: invoiceData.customerId // Maps to Customer ID
+	
+    }
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<quickbooks-online-connector-mule-4:invoice-post4 doc:name="Create invoice" doc:id="ce8bc408-1a5a-47a8-8ba9-d7bb1b056186" config-ref="Quickbooks_Online_Connector_Mule4Connector_Config" minorversionQueryParam="${qb.minorVersion}" userAgentHeader="${qb.userAgent}" />
+	</flow>
+	<flow name="Flow2" doc:id="26142d2e-add9-4e1d-ad39-8e2e604f8383">
+		<salesforce:modified-object-listener objectType="inov8__PMT_Project__c" doc:name="On Modified Object" doc:id="58590383-9142-4b77-9fc1-7d2981270f3a" config-ref="Salesforce_Config">
+			<scheduling-strategy>
+				<fixed-frequency frequency="30000"/>
+			</scheduling-strategy>
+		</salesforce:modified-object-listener>
+		<choice doc:name='If project status is "Approved"' doc:id="6286b34f-4eca-4ead-b810-1109beef9eba">
+			<when expression='#[payload.inov8__Project_Status__c	 == "Approved" and payload.Quickbooks_Invoice_Created__c == null]'>
+				<ee:transform doc:name="Transform Message" doc:id="14b12658-e01e-41a8-9acf-9c0b63be7dfd">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Line: [{
+		DetailType: "SalesItemLineDetail",
+		Amount: payload.Amount__c as Number default 0,
+		SalesItemLineDetail: {
+			ItemRef: {
+				name: "",
+				value: "1"
+			}
+		}
+	}],
+	CustomerRef: {
+		value: "19"
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<quickbooks-online-connector-mule-4:invoice-post4 doc:name="Create invoice" doc:id="b804371e-b2c0-43db-9c01-8e17ee60f2b2" config-ref="Quickbooks_Online_Connector_Mule4Connector_Config" minorversionQueryParam="${qb.minorVersion}" userAgentHeader="${qb.userAgent}" />
+				<ee:transform doc:name="Take some invoice information" doc:id="9cdce853-a0bd-4790-9118-9a720e30d2d7">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	Id: "a0QHu00000XN3MBMA1",
+	Quickbooks_Invoice_Created__c: payload.Invoice.MetaData.CreateTime as Date,
+	Quickbooks_Invoice_Number__c: payload.Invoice.DocNumber as String,
+	Quickbooks_Total_Amount__c: payload.Invoice.TotalAmt as String,
+	Quickbooks_Invoice_Balance__c: payload.Invoice.Balance as String,
+	Print_Status__c: payload.Invoice.PrintStatus as String,
+	Email_Status__c: payload.Invoice.EmailStatus as String
+}]
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<salesforce:update type="inov8__PMT_Project__c" doc:name="Update" doc:id="a3f97c87-f8c5-4d29-8b41-376997e7c0ef" config-ref="Salesforce_Config" />
+			</when>
+		</choice>
+	</flow>
+	<flow name="Flow3" doc:id="e140a477-071c-43dc-8f2d-12dbb70ef312">
+		<salesforce:modified-object-listener objectType="inov8__PMT_Project__c" doc:name="On Modified Object" doc:id="5e4bc7f6-8f0e-464c-960d-aa2aba7a3b10" config-ref="Salesforce_Config">
+			<scheduling-strategy>
+				<fixed-frequency frequency="30000"/>
+			</scheduling-strategy>
+		</salesforce:modified-object-listener>
+		<choice doc:name='If project status is "Transition"' doc:id="4a15d786-fcdb-49c4-b34e-20d970dbecae">
+			<when expression='#[payload.inov8__Project_Status__c	 == "Transition" and payload.Quickbooks_Invoice_Created__c == null]'>
+				<ee:transform doc:name="Transform Message" doc:id="ed7fee3a-6fdf-41e1-8c0a-30362114bd68">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Line: [{
+		DetailType: "SalesItemLineDetail",
+		Amount: payload.Amount__c as Number default 0,
+		SalesItemLineDetail: {
+			ItemRef: {
+				name: "",
+				value: "1"
+			}
+		}
+	}],
+	CustomerRef: {
+		value: "19"
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<quickbooks-online-connector-mule-4:invoice-post4 doc:name="Create invoice" doc:id="0700e4c3-6105-4bd3-8ea0-165cd9acf88e" config-ref="Quickbooks_Online_Connector_Mule4Connector_Config" minorversionQueryParam="${qb.minorVersion}" userAgentHeader="${qb.userAgent}" />
+				<async doc:name="Async" doc:id="c3708842-511f-4e39-ad7c-da31b09ae256">
+					<ee:transform doc:name="Slack Message" doc:id="dd7d34ca-0400-4d45-a330-e390c568cbbb">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var customerName = payload.Invoice.CustomerRef.name
+var invoiceNumber = payload.Invoice.DocNumber
+var invoiceAmount = payload.Invoice.TotalAmt
+var invoiceDate = payload.Invoice.MetaData.CreateTime
+---
+{
+	channel: "C079Y7GSX5L",
+	text: "An invoice has been auto-generated in QuickBooks Online for " ++ customerName ++ "\n" ++
+           "Invoice Number: " ++ invoiceNumber ++ "\n" ++
+           "Amount: " ++ invoiceAmount ++ "\n" ++
+           "Invoice Created Date: " ++ invoiceDate
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+					<http:request method="POST" doc:name="Send Slack Message" doc:id="991328a7-621a-4822-a9ac-6e3362e63c46" config-ref="Slack_HTTP_Request_configuration" path="/sendSlackMessage" />
+				</async>
+				<ee:transform doc:name="Transform Message" doc:id="66d1cb21-8677-4a38-8ac7-bddc52b6fa30">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	Id: "a0QHu00000XN3MBMA1",
+	Quickbooks_Invoice_Created__c: payload.Invoice.MetaData.CreateTime as Date,
+	Quickbooks_Invoice_Number__c: payload.Invoice.DocNumber as String,
+	Quickbooks_Total_Amount__c: payload.Invoice.TotalAmt as String,
+	Quickbooks_Invoice_Balance__c: payload.Invoice.Balance as String,
+	Print_Status__c: payload.Invoice.PrintStatus as String,
+	Email_Status__c: payload.Invoice.EmailStatus as String
+}]
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<salesforce:update doc:name="Update" doc:id="ff2e8df6-5379-41a6-8ad9-de1f350fa65e" config-ref="Salesforce_Config" type="inov8__PMT_Project__c" />
+				<logger level="INFO" doc:name="Logger" doc:id="ad00ee05-9495-4255-884b-bddbe7f62e8e" message="#[%dw 2.0&#10;output application/json&#10;---&#10;payload]" />
+			</when>
+		</choice>
+	</flow>
+	<flow name="Slack" doc:id="efa5379b-3544-4de0-a934-f59884fbe02b">
+		<http:listener doc:name="Listener" doc:id="3a0255b7-b167-48bf-a246-b9e7ab729556" config-ref="HTTP_Listener_config" path="/sendSlackMessage" />
+		<slack:create-chatpost-message doc:name="Send Message" doc:id="4a9943cb-0d44-4d6b-bf9f-cd4c63cc2991" config-ref="Slack_Connector_Config" />
+	</flow>
+	<flow name="Flow4" doc:id="22a96d49-23c5-45ca-b05d-2ba2889d905a">
+		<quickbooks-online-connector-mule-4:on-updated-invoice-trigger doc:name="On new or updated invoice" doc:id="8786007c-fd87-4e04-a936-6c093ac51917" config-ref="Quickbooks_Online_Connector_Mule4Connector_Config">
+			<scheduling-strategy>
+				<fixed-frequency />
+			</scheduling-strategy>
+		</quickbooks-online-connector-mule-4:on-updated-invoice-trigger>
+		<ee:transform doc:name="Transform Message" doc:id="090dddd0-1ce7-4956-8f14-5de777fb4e7f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload.Line map ( line , indexOfLine ) -> {
+	Id: "a8DHu000000odz8MAA",
+	Payment_Due_Date__c: payload.DueDate as String,
+	Amount_Due__c: line.Amount as String
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:update type="Patient_Opportunity__c" doc:name="Update" doc:id="4be2229a-b5dd-40ed-8252-bc44a142457c" config-ref="Salesforce_Config" />
+	</flow>
+</mule>
